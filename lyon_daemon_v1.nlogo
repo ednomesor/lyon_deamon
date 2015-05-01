@@ -16,6 +16,11 @@ daemons-own[
   
 ]
 
+links-own[
+ link-intensity
+ age
+]
+
 to setup-variable
   set nb-citizens i-nb-citizens
 end
@@ -41,7 +46,10 @@ to setup
     let myrelations n-of nb-relations  citizens with[who !=  [who] of myself]
     foreach sort myrelations [
      ask ? [
-      create-link-with myself
+      create-link-with myself[
+        set link-intensity 50
+        set age 0
+      ]
      ] 
     ]
   ]
@@ -70,6 +78,7 @@ end
 to go
   echevinat
   relations
+  socoality-links
   tick
 end
 
@@ -88,6 +97,34 @@ to echevinat
      set color yellow
     ]
   ]
+end
+
+to socoality-links
+  ask citizens[
+   if any? my-links[
+     ;;selction de n links
+     let year-relation n-of (random count my-links) my-links
+     ask year-relation [
+      set  link-intensity link-intensity + random-normal 0 25 
+     ]
+   ]  
+  ]
+  ask links [
+   set age age + 1 
+  ]
+  if any? links with[age > 25][
+   ask  links with[age > 25][
+    set age 0
+    set link-intensity link-intensity - 50
+   ]
+  ]
+  ;;disparition du lien
+  if any? links with[link-intensity < 0][
+   ask  links with[link-intensity < 0][
+     die
+   ]
+  ]
+  layout-radial turtles links (citizen 0)
 end
 
 to relations
@@ -171,6 +208,35 @@ i-nb-citizens
 1
 NIL
 HORIZONTAL
+
+PLOT
+7
+125
+207
+275
+nombre de liens
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count links"
+
+MONITOR
+20
+300
+102
+345
+NIL
+count links
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -533,5 +599,5 @@ Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 
 @#$#@#$#@
-0
+1
 @#$#@#$#@
