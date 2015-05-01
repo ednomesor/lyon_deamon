@@ -1,6 +1,6 @@
 # Lyon Deamon
 
-Le principe de ce modèle est d'explorer les comportment sociaux dès lors qu'un [Démon de Maxwell](http://fr.wikipedia.org/wiki/D%C3%A9mon_de_Maxwell) permet d'accès a des charges sociales enviable.
+Le principe de ce modèle est d'explorer les comportment sociaux dès lors qu'un [Démon de Maxwell](http://fr.wikipedia.org/wiki/D%C3%A9mon_de_Maxwell) permet d'accès a des charges sociales enviable. Le modèle est développé grace à la plateforme [Netlogo](https://ccl.northwestern.edu/netlogo/)
 
 ## Le principe du Démon de Maxwell ##
 
