@@ -5,11 +5,19 @@ globals[
   ;;variable du modele
   nb-citizens
   nb-relations
+  deamon_strategie
+  
+  
+  ;;metric
+  nb_consules
 ]
 
 citizens-own[
   consulat
   time-flag
+  consul_flag
+  time2consul
+  my_nb_link
 ]
 
 daemons-own[
@@ -22,7 +30,8 @@ links-own[
 ]
 
 to setup-variable
-  set nb-citizens i-nb-citizens
+  set nb-citizens i_nb-citizens
+  set deamon_strategie i_deamon_strategie
 end
 
 to setup-fixe
@@ -40,6 +49,8 @@ to setup
    set color red
    setxy random-pxcor random-pycor
    set consulat FALSE
+   set consul_flag FALSE
+   set time2consul 0
    ;set shape person
   ]
   ask citizens[
@@ -58,6 +69,8 @@ to setup
    set consulat TRUE
    set color yellow
    set time-flag 2
+   set consul_flag TRUE
+   set time2consul 1
   ]
   
   ask n-of 2 citizens with[consulat = TRUE][
@@ -72,6 +85,9 @@ to setup
    setxy random-pxcor random-pycor
     
   ]
+  ask citizens [
+   set my_nb_link count my-links 
+  ]
   reset-ticks ;;remet à zero les itéartions
 end
 
@@ -79,24 +95,62 @@ to go
   echevinat
   relations
   socoality-links
+  stats
   tick
 end
 
 to echevinat
   ask citizens with[consulat = TRUE][
-   set time-flag time-flag - 1 
+   set time-flag time-flag - 1
   ]
   ask citizens with [time-flag = 0][
    set consulat FALSE 
    set color red
   ]
-  ask one-of daemons [
-    ask n-of 2 citizens [
-     set consulat TRUE
-     set time-flag 2 
-     set color yellow
+  
+  ask citizens with [consul_flag = TRUE][
+   set time2consul time2consul + 1
+   if time2consul >= 26 [
+    set consul_flag FALSE
+    set time2consul 0 
+   ]
+  ]
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; STrategie de deamon 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  if deamon_strategie = 1 [
+      ask one-of daemons [
+        ask n-of 2 citizens with [consul_flag = FALSE][
+          set consulat TRUE
+          set time-flag 2 
+          set color yellow
+          set consul_flag TRUE
+        ]
+      ]
+  ]
+  
+  if deamon_strategie = 2 [
+    ;;; le demon choisie en fonction du nombre de lien
+    ;;; Choix sur l'intensité de degre
+    let list_nb_links [my_nb_link] of citizens with [consulat = FALSE and consul_flag = FALSE]
+    set list_nb_links sort-by > list_nb_links
+    show list_nb_links
+    ask one-of daemons [
+      let nb_nomination [1 1]
+      let nbnom 0
+      foreach nb_nomination [
+       ask one-of citizens with[my_nb_link = first list_nb_links][
+         set consulat TRUE
+          set time-flag 2 
+          set color yellow
+          set nbnom nbnom + 1
+          set consul_flag TRUE
+       ]
+       set list_nb_links but-first list_nb_links
+      ]
     ]
   ]
+
 end
 
 to socoality-links
@@ -107,30 +161,38 @@ to socoality-links
      ask year-relation [
       set  link-intensity link-intensity + random-normal 0 25 
      ]
+     set my_nb_link count my-links
    ]  
   ]
   ask links [
    set age age + 1 
   ]
-  if any? links with[age > 25][
-   ask  links with[age > 25][
-    set age 0
-    set link-intensity link-intensity - 50
-   ]
-  ]
+;  if any? links with[age > 25][
+;   ask  links with[age > 25][
+;    set age 0
+;    set link-intensity link-intensity - 50
+;   ]
+;  ]
   ;;disparition du lien
   if any? links with[link-intensity < 0][
    ask  links with[link-intensity < 0][
      die
    ]
   ]
-  layout-radial turtles links (citizen 0)
+  
+;  layout-radial turtles links (citizen 0)
 end
 
 to relations
   ask citizens with[consulat = TRUE][
-   create-links-with citizens with[consulat = TRUE AND who !=  [who] of myself]
+   create-links-with citizens with[consulat = TRUE AND who !=  [who] of myself][
+     set link-intensity 50
+    ]
   ]
+end
+
+to stats
+  set nb_consules count citizens with[consulat = TRUE]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -180,10 +242,10 @@ NIL
 BUTTON
 101
 25
-164
+168
 58
-NIL
-go
+go 200
+if ticks < 200 [\n go\n]
 T
 1
 T
@@ -195,25 +257,25 @@ NIL
 1
 
 SLIDER
-21
-76
-193
-109
-i-nb-citizens
-i-nb-citizens
+20
+115
+192
+148
+i_nb-citizens
+i_nb-citizens
 0
+250
 100
-50
 1
 1
 NIL
 HORIZONTAL
 
 PLOT
-7
-125
-207
-275
+6
+164
+206
+314
 nombre de liens
 NIL
 NIL
@@ -228,12 +290,55 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count links"
 
 MONITOR
-20
-300
-102
-345
+19
+339
+101
+384
 NIL
 count links
+17
+1
+11
+
+SLIDER
+20
+390
+192
+423
+i_deamon_strategie
+i_deamon_strategie
+1
+2
+2
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+100
+60
+163
+93
+NIL
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+MONITOR
+105
+340
+162
+385
+consules
+nb_consules
 17
 1
 11
@@ -581,7 +686,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.5
+NetLogo 5.2.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
