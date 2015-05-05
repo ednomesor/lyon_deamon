@@ -6,6 +6,7 @@ globals[
   nb-citizens
   nb-relations
   deamon_strategie
+  nb-family
   
   
   ;;metric
@@ -13,6 +14,7 @@ globals[
 ]
 
 citizens-own[
+  family_sphere
   consulat
   time-flag
   consul_flag
@@ -36,6 +38,7 @@ end
 
 to setup-fixe
   set nb-relations 3 ;;nombre de relations initiale par citizens
+  set nb-family 5
 end
 
 to setup
@@ -45,16 +48,20 @@ to setup
   set-default-shape daemons "circle"
   set-default-shape citizens "person"
   
+  ;;list of number for family-sphere
+  let l-family n-values nb-family [ ? + 1 ]
+  
   create-citizens nb-citizens [
    set color red
    setxy random-pxcor random-pycor
    set consulat FALSE
    set consul_flag FALSE
    set time2consul 0
+   set family_sphere one-of l-family
    ;set shape person
   ]
   ask citizens[
-    let myrelations n-of nb-relations  citizens with[who !=  [who] of myself]
+    let myrelations n-of nb-relations  citizens with[who !=  [who] of myself AND family_sphere = [family_sphere] of myself]
     foreach sort myrelations [
      ask ? [
       create-link-with myself[
@@ -63,6 +70,7 @@ to setup
       ]
      ] 
     ]
+    set color family_sphere
   ]
   
   ask n-of 4 citizens [
@@ -134,7 +142,6 @@ to echevinat
     ;;; Choix sur l'intensité de degre
     let list_nb_links [my_nb_link] of citizens with [consulat = FALSE and consul_flag = FALSE]
     set list_nb_links sort-by > list_nb_links
-    show list_nb_links
     ask one-of daemons [
       let nb_nomination [1 1]
       let nbnom 0
@@ -150,7 +157,9 @@ to echevinat
       ]
     ]
   ]
-
+  if deamon_strategie = 2 [
+    
+  ]
 end
 
 to socoality-links
@@ -308,18 +317,18 @@ SLIDER
 i_deamon_strategie
 i_deamon_strategie
 1
-2
-2
+3
+1
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-100
-60
-163
-93
+20
+65
+83
+98
 NIL
 go
 NIL
@@ -342,6 +351,23 @@ nb_consules
 17
 1
 11
+
+BUTTON
+120
+75
+183
+108
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -686,7 +712,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.2.0
+NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
